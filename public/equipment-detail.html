@@ -292,19 +292,28 @@
 
             showLoading('جاري تحديد موقعك...');
 
+            // خيارات تحديد الموقع لتحسين السرعة والموثوقية
+            const geoOptions = {
+                enableHighAccuracy: false, // تعيينه لـ false لزيادة سرعة الحصول على الموقع
+                timeout: 10000,          // مهلة 10 ثواني كحد أقصى
+                maximumAge: 60000        // استخدام موقع مخزن إذا كان عمره أقل من دقيقة
+            };
+
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const { latitude, longitude } = position.coords;
 
                     // Ask for additional notes
                     const { value: notes } = await Swal.fire({
-                        title: 'طلب خدمة',
+                        title: 'تم تحديد موقعك',
                         html: `
-              <p style="margin-bottom: 1rem;">تم تحديد موقعك بنجاح</p>
-              <textarea id="serviceNotes" class="swal2-textarea" placeholder="أضف ملاحظات إضافية (اختياري)" style="width: 100%; font-family: 'Tajawal';"></textarea>
+              <p style="margin-bottom: 1rem; color: var(--color-success); font-weight: bold;">
+                <i class="fas fa-check-circle"></i> تم التقاط الموقع بنجاح
+              </p>
+              <textarea id="serviceNotes" class="swal2-textarea" placeholder="أضف ملاحظات إضافية للمالك (اختياري)" style="width: 100%; font-family: 'Tajawal';"></textarea>
             `,
                         showCancelButton: true,
-                        confirmButtonText: 'إرسال الطلب',
+                        confirmButtonText: 'إرسال الطلب الآن',
                         cancelButtonText: 'إلغاء',
                         confirmButtonColor: '#f59e0b',
                         preConfirm: () => {
@@ -314,7 +323,7 @@
 
                     if (notes !== undefined) {
                         try {
-                            showLoading('جاري إرسال الطلب...');
+                            showLoading('جاري إرسال الطلب للمالك...');
 
                             const response = await api.post('/requests', {
                                 equipmentId: currentEquipment._id,
@@ -327,7 +336,7 @@
                             });
 
                             if (response.success) {
-                                await showSuccess('تم إرسال طلبك بنجاح! سيتواصل معك صاحب المعدة قريباً');
+                                await showSuccess('تم إرسال طلبك بنجاح! ستصلك تنبيهات عند موافقة المالك');
                                 // Reload to update status
                                 setTimeout(() => window.location.reload(), 2000);
                             }
@@ -338,12 +347,24 @@
                 },
                 (error) => {
                     Swal.close();
-                    let errorMessage = 'حدث خطأ أثناء تحديد موقعك';
-                    if (error.code === error.PERMISSION_DENIED) {
-                        errorMessage = 'يرجى السماح بالوصول إلى موقعك لإرسال الطلب';
+                    let errorMessage = 'تعذر تحديد موقعك بدقة حالياً';
+
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'يرجى السماح للمتصفح بالوصول للموقع لإرسال الطلب';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'معلومات الموقع غير متاحة حالياً، جرب إعادة التشغيل';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'انتهت مهلة البحث عن الموقع، يرجى المحاولة مرة أخرى';
+                            break;
                     }
+
                     showError(errorMessage);
-                }
+                    console.error('Geolocation Error:', error);
+                },
+                geoOptions
             );
         });
 
