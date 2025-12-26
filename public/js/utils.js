@@ -152,10 +152,23 @@ export const removeUser = () => {
     localStorage.removeItem('user');
 };
 
-export const logout = () => {
-    removeToken();
-    removeUser();
-    window.location.href = '/login.html';
+export const logout = async () => {
+    const result = await Swal.fire({
+        title: 'تأكيد الخروج',
+        text: 'هل أنت متأكد من تسجيل الخروج؟',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'نعم، خروج',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#6b7280'
+    });
+
+    if (result.isConfirmed) {
+        removeToken();
+        removeUser();
+        window.location.href = '/login.html';
+    }
 };
 
 // Check authentication

@@ -257,7 +257,8 @@ router.delete('/:id', protect, isOwner, async (req, res) => {
 
         // Delete images from filesystem
         equipment.images.forEach(imagePath => {
-            const fullPath = path.join(__dirname, '..', 'public', imagePath);
+            // imagePath starts with /uploads/
+            const fullPath = path.join(__dirname, '..', imagePath);
             if (fs.existsSync(fullPath)) {
                 fs.unlinkSync(fullPath);
             }

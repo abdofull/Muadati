@@ -10,7 +10,9 @@
 // ملاحظة: حالياً النظام يدعم مدينة غريان فقط كمرحلة تجريبية
 // سيتم إضافة باقي المدن الليبية تدريجياً
 export const LIBYAN_CITIES = [
-    'غريان'
+    'غريان',
+    'الأصابعه',
+    "العزيزية"
 ];
 
 // فئات المعدات المتاحة في النظام
@@ -32,3 +34,6 @@ export const EQUIPMENT_CATEGORIES = [
 export const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3000/api'
     : '/api';
+
+// تصدير كـ API_URL أيضاً لضمان عمل نظام الإشعارات والسكربتات القديمة
+export const API_URL = API_BASE_URL;
