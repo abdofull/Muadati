@@ -21,11 +21,11 @@ const requestSchema = new mongoose.Schema({
     location: {
         lat: {
             type: Number,
-            required: [true, 'خط العرض مطلوب']
+            default: 0
         },
         lng: {
             type: Number,
-            required: [true, 'خط الطول مطلوب']
+            default: 0
         }
     },
     customerPhone: {
