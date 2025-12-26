@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المعدة - نظام معداتي</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/main.css">
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="/index.html" class="navbar-brand">
+                <i class="fas fa-tools"></i>
+                <span>نظام معداتي</span>
+            </a>
+
+            <div id="navbarActions"></div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding: var(--spacing-8) var(--spacing-6);">
+        <!-- Loading -->
+        <div id="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Equipment Details -->
+        <div id="equipmentDetails" class="hidden">
+            <!-- Back Button -->
+            <a href="/index.html" class="btn btn-outline mb-6">
+                <i class="fas fa-arrow-right"></i>
+                العودة إلى القائمة
+            </a>
+
+            <div class="grid grid-cols-2" style="gap: var(--spacing-8);">
+                <!-- Images Section -->
+                <div>
+                    <div id="mainImageContainer"
+                        style="border-radius: var(--border-radius-xl); overflow: hidden; margin-bottom: var(--spacing-4); box-shadow: var(--shadow-lg);">
+                        <img id="mainImage" src="" alt="" style="width: 100%; height: 400px; object-fit: cover;">
+                    </div>
+
+                    <!-- Thumbnail Gallery -->
+                    <div id="thumbnailGallery"
+                        style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-3);"></div>
+                </div>
+
+                <!-- Details Section -->
+                <div class="card">
+                    <div class="card-body" style="padding: var(--spacing-8);">
+                        <div id="statusBadge" class="badge mb-4"></div>
+
+                        <span id="equipmentCategory" class="equipment-card-category"></span>
+                        <h1 id="equipmentTitle" style="margin-top: var(--spacing-4);"></h1>
+
+                        <div class="flex items-center gap-3 mb-4" style="color: var(--color-gray-600);">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="equipmentCity"></span>
+                        </div>
+
+                        <div class="equipment-card-price mb-6">
+                            <span class="equipment-card-price-amount" id="equipmentPrice"></span>
+                            <span class="equipment-card-price-period">/ يوم</span>
+                        </div>
+
+                        <div id="hourlyPrice" class="hidden mb-6" style="color: var(--color-gray-600);">
+                            <i class="fas fa-clock"></i>
+                            <span id="hourlyPriceText"></span>
+                        </div>
+
+                        <hr
+                            style="margin: var(--spacing-6) 0; border: none; border-top: 1px solid var(--color-gray-200);">
+
+                        <h3 style="margin-bottom: var(--spacing-4);">
+                            <i class="fas fa-info-circle" style="color: var(--color-accent);"></i>
+                            الوصف
+                        </h3>
+                        <p id="equipmentDescription" style="color: var(--color-gray-700); line-height: 1.8;"></p>
+
+                        <hr
+                            style="margin: var(--spacing-6) 0; border: none; border-top: 1px solid var(--color-gray-200);">
+
+                        <h3 style="margin-bottom: var(--spacing-4);">
+                            <i class="fas fa-user" style="color: var(--color-accent);"></i>
+                            معلومات المالك
+                        </h3>
+                        <div style="color: var(--color-gray-700);">
+                            <p><strong>الاسم:</strong> <span id="ownerName"></span></p>
+                            <p><strong>المدينة:</strong> <span id="ownerCity"></span></p>
+                            <p><strong>رقم الهاتف:</strong> <span id="ownerPhone"></span></p>
+                        </div>
+
+                        <hr
+                            style="margin: var(--spacing-6) 0; border: none; border-top: 1px solid var(--color-gray-200);">
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col gap-3">
+                            <a id="callButton" href="" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-phone"></i>
+                                اتصل الآن
+                            </a>
+                            <button id="requestServiceBtn" class="btn btn-primary btn-lg">
+                                <i class="fas fa-location-arrow"></i>
+                                طلب الخدمة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Not Found -->
+        <div id="notFound" class="hidden text-center" style="padding: var(--spacing-16) 0;">
+            <i class="fas fa-exclamation-circle"
+                style="font-size: 4rem; color: var(--color-danger); margin-bottom: var(--spacing-4);"></i>
+            <h2>المعدة غير موجودة</h2>
+            <p style="color: var(--color-gray-600);">عذراً، المعدة المطلوبة غير متاحة</p>
+            <a href="/index.html" class="btn btn-primary mt-6">العودة للصفحة الرئيسية</a>
+        </div>
+    </main>
+
+    <script type="module">
+        import { api, getUser, logout, isAuthenticated, formatPrice, showError, showSuccess, showLoading, showAlert, requireAuth } from './js/utils.js';
+
+        // Get equipment ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const equipmentId = urlParams.get('id');
+
+        if (!equipmentId) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('notFound').classList.remove('hidden');
+        }
+
+        // Setup navbar (same as index.html)
+        const navbarActions = document.getElementById('navbarActions');
+        const user = getUser();
+
+        if (isAuthenticated() && user) {
+            navbarActions.innerHTML = `
+        <div class="navbar-user">
+          <div class="navbar-user-avatar">${user.name.charAt(0)}</div>
+          <span>${user.name}</span>
+          ${user.role === 'owner' ? `
+            <a href="/owner-dashboard.html" class="btn btn-sm btn-primary">
+              <i class="fas fa-tachometer-alt"></i>
+              لوحة التحكم
+            </a>
+          ` : ''}
+          <button id="logoutBtn" class="btn btn-sm btn-secondary">
+            <i class="fas fa-sign-out-alt"></i>
+            خروج
+          </button>
+        </div>
+      `;
+            document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        } else {
+            navbarActions.innerHTML = `
+        <div style="display: flex; gap: var(--spacing-3);">
+          <a href="/login.html" class="btn btn-sm btn-secondary">
+            <i class="fas fa-sign-in-alt"></i>
+            دخول
+          </a>
+          <a href="/register.html" class="btn btn-sm btn-primary">
+            <i class="fas fa-user-plus"></i>
+            إنشاء حساب
+          </a>
+        </div>
+      `;
+        }
+
+        // Load equipment details
+        let currentEquipment = null;
+
+        async function loadEquipmentDetails() {
+            try {
+                const response = await api.get(`/equipment/${equipmentId}`);
+                currentEquipment = response.data;
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('equipmentDetails').classList.remove('hidden');
+
+                displayEquipment(currentEquipment);
+            } catch (error) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('notFound').classList.remove('hidden');
+            }
+        }
+
+        function displayEquipment(equipment) {
+            // Title and basic info
+            document.getElementById('equipmentTitle').textContent = equipment.title;
+            document.getElementById('equipmentCategory').textContent = equipment.category;
+            document.getElementById('equipmentCity').textContent = equipment.city;
+            document.getElementById('equipmentPrice').textContent = formatPrice(equipment.pricePerDay);
+            document.getElementById('equipmentDescription').textContent = equipment.description;
+
+            // Status badge
+            const statusBadge = document.getElementById('statusBadge');
+            if (equipment.status === 'متاحة') {
+                statusBadge.className = 'badge badge-success mb-4';
+                statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> متاحة';
+            } else {
+                statusBadge.className = 'badge badge-danger mb-4';
+                statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> مشغولة';
+            }
+
+            // Hourly price
+            if (equipment.pricePerHour) {
+                document.getElementById('hourlyPrice').classList.remove('hidden');
+                document.getElementById('hourlyPriceText').textContent = formatPrice(equipment.pricePerHour) + ' / ساعة';
+            }
+
+            // Owner info
+            document.getElementById('ownerName').textContent = equipment.owner.name;
+            document.getElementById('ownerCity').textContent = equipment.owner.city;
+            document.getElementById('ownerPhone').textContent = equipment.phoneNumber;
+            document.getElementById('callButton').href = `tel:${equipment.phoneNumber}`;
+
+            // Images
+            const images = equipment.images && equipment.images.length > 0
+                ? equipment.images
+                : ['https://via.placeholder.com/800x600/1e3a8a/ffffff?text=لا+توجد+صورة'];
+
+            document.getElementById('mainImage').src = images[0];
+            document.getElementById('mainImage').alt = equipment.title;
+
+            // Thumbnails
+            const thumbnailGallery = document.getElementById('thumbnailGallery');
+            thumbnailGallery.innerHTML = '';
+            images.forEach((img, index) => {
+                const thumb = document.createElement('div');
+                thumb.style.cssText = 'cursor: pointer; border-radius: var(--border-radius-md); overflow: hidden; border: 3px solid transparent; transition: all var(--transition-fast);';
+                thumb.innerHTML = `<img src="${img}" alt="صورة ${index + 1}" style="width: 100%; height: 80px; object-fit: cover;">`;
+                thumb.onclick = () => {
+                    document.getElementById('mainImage').src = img;
+                    document.querySelectorAll('#thumbnailGallery > div').forEach(t => t.style.borderColor = 'transparent');
+                    thumb.style.borderColor = 'var(--color-accent)';
+                };
+                if (index === 0) thumb.style.borderColor = 'var(--color-accent)';
+                thumbnailGallery.appendChild(thumb);
+            });
+        }
+
+        // Request Service with Location
+        document.getElementById('requestServiceBtn')?.addEventListener('click', async () => {
+            if (!isAuthenticated()) {
+                const result = await Swal.fire({
+                    icon: 'info',
+                    title: 'تسجيل الدخول مطلوب',
+                    text: 'يجب تسجيل الدخول أولاً لطلب الخدمة',
+                    showCancelButton: true,
+                    confirmButtonText: 'تسجيل الدخول',
+                    cancelButtonText: 'إلغاء',
+                    confirmButtonColor: '#f59e0b'
+                });
+                if (result.isConfirmed) {
+                    window.location.href = '/login.html';
+                }
+                return;
+            }
+
+            if (user.role !== 'customer') {
+                showAlert('تنبيه', 'طلب الخدمة متاح للعملاء فقط', 'warning');
+                return;
+            }
+
+            if (currentEquipment.status !== 'متاحة') {
+                showAlert('غير متاح', 'هذه المعدة غير متاحة حالياً', 'warning');
+                return;
+            }
+
+            // Get user location
+            if (!navigator.geolocation) {
+                showError('المتصفح لا يدعم تحديد الموقع');
+                return;
+            }
+
+            showLoading('جاري تحديد موقعك...');
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+
+                    // Ask for additional notes
+                    const { value: notes } = await Swal.fire({
+                        title: 'طلب خدمة',
+                        html: `
+              <p style="margin-bottom: 1rem;">تم تحديد موقعك بنجاح</p>
+              <textarea id="serviceNotes" class="swal2-textarea" placeholder="أضف ملاحظات إضافية (اختياري)" style="width: 100%; font-family: 'Tajawal';"></textarea>
+            `,
+                        showCancelButton: true,
+                        confirmButtonText: 'إرسال الطلب',
+                        cancelButtonText: 'إلغاء',
+                        confirmButtonColor: '#f59e0b',
+                        preConfirm: () => {
+                            return document.getElementById('serviceNotes').value;
+                        }
+                    });
+
+                    if (notes !== undefined) {
+                        try {
+                            showLoading('جاري إرسال الطلب...');
+
+                            const response = await api.post('/requests', {
+                                equipmentId: currentEquipment._id,
+                                location: {
+                                    lat: latitude,
+                                    lng: longitude
+                                },
+                                customerPhone: user.phone,
+                                notes: notes || ''
+                            });
+
+                            if (response.success) {
+                                await showSuccess('تم إرسال طلبك بنجاح! سيتواصل معك صاحب المعدة قريباً');
+                                // Reload to update status
+                                setTimeout(() => window.location.reload(), 2000);
+                            }
+                        } catch (error) {
+                            showError(error.message || 'حدث خطأ أثناء إرسال الطلب');
+                        }
+                    }
+                },
+                (error) => {
+                    Swal.close();
+                    let errorMessage = 'حدث خطأ أثناء تحديد موقعك';
+                    if (error.code === error.PERMISSION_DENIED) {
+                        errorMessage = 'يرجى السماح بالوصول إلى موقعك لإرسال الطلب';
+                    }
+                    showError(errorMessage);
+                }
+            );
+        });
+
+        // Load data
+        if (equipmentId) {
+            loadEquipmentDetails();
+        }
+    </script>
+</body>
+
+</html>
