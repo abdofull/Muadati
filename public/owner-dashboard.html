@@ -12,6 +12,11 @@
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Google Fonts - Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
     <!-- Leaflet.js for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,82 +25,1069 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* ==================== المتغيرات والإعدادات الأساسية ==================== */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+            --secondary-gradient: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+            --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            --warning-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 15px 50px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 25px 80px rgba(0, 0, 0, 0.2);
+            --primary-dark: #1e3c72;
+            --primary-light: #2a5298;
+            --gold: #f5af19;
+            --gold-dark: #d4940d;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a6a;
+            --text-light: #8888a8;
+            --bg-light: #f0f4f8;
+            --bg-card: #ffffff;
+            --white: #ffffff;
+            --border-radius-sm: 8px;
+            --border-radius-md: 16px;
+            --border-radius-lg: 24px;
+            --border-radius-xl: 32px;
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================== الأنيميشن ==================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .animate-slide-right {
+            animation: slideInRight 0.6s ease forwards;
+        }
+
+        /* ==================== شريط التنقل ==================== */
+        .navbar {
+            background: var(--primary-gradient);
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .navbar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            font-weight: 800;
+            transition: var(--transition-medium);
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
+        .navbar-brand i {
+            font-size: 2rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .navbar-brand span {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--white);
+        }
+
+        .navbar-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--secondary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(245, 175, 25, 0.4);
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: var(--transition-medium);
+        }
+
+        .navbar-user-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* ==================== الأزرار ==================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-md);
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: var(--transition-medium);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--secondary-gradient);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(241, 39, 17, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(241, 39, 17, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.15);
+            color: var(--white);
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-dark);
+            border: 2px solid var(--primary-dark);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-dark);
+            color: var(--white);
+            transform: translateY(-3px);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger-gradient);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        /* ==================== المحتوى الرئيسي ==================== */
+        .main-content {
+            padding: 120px 2rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* ==================== ترويسة الصفحة ==================== */
+        .page-header {
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            animation: fadeInDown 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .page-header-content h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header-content h1 i {
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header-content p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* ==================== التبويبات ==================== */
         .dashboard-tabs {
             display: flex;
-            gap: var(--spacing-4);
-            margin-bottom: var(--spacing-6);
-            border-bottom: 2px solid var(--color-gray-200);
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: var(--bg-card);
+            padding: 0.75rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            animation: fadeInUp 0.6s ease 0.2s backwards;
         }
 
         .tab-button {
-            padding: var(--spacing-4) var(--spacing-6);
-            background: none;
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
             border: none;
-            font-family: var(--font-family);
-            font-size: var(--font-size-lg);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
             font-weight: 600;
-            color: var(--color-gray-600);
+            color: var(--text-secondary);
             cursor: pointer;
-            transition: all var(--transition-fast);
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
+            transition: all var(--transition-medium);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
         }
 
         .tab-button:hover {
-            color: var(--color-primary);
+            color: var(--primary-dark);
+            background: var(--bg-light);
         }
 
         .tab-button.active {
-            color: var(--color-accent);
-            border-bottom-color: var(--color-accent);
+            background: var(--primary-gradient);
+            color: var(--white);
+            box-shadow: 0 4px 20px rgba(30, 60, 114, 0.3);
+        }
+
+        .tab-button .badge {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-button.active .badge {
+            background: var(--secondary-gradient);
+            color: var(--white);
         }
 
         .tab-content {
             display: none;
+            animation: fadeInUp 0.5s ease;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        .equipment-table {
-            width: 100%;
-            background: var(--color-white);
+        /* ==================== قسم المعدات ==================== */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2 i {
+            color: var(--primary-dark);
+        }
+
+        /* ==================== جدول المعدات ==================== */
+        .table-container {
+            background: var(--bg-card);
             border-radius: var(--border-radius-xl);
             overflow: hidden;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-medium);
+            animation: fadeInUp 0.6s ease 0.3s backwards;
+        }
+
+        .equipment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .equipment-table thead {
+            background: var(--primary-gradient);
         }
 
         .equipment-table th {
-            background: var(--color-primary);
-            color: var(--color-white);
-            padding: var(--spacing-4);
+            color: var(--white);
+            padding: 1.25rem 1rem;
             text-align: right;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .equipment-table th:first-child {
+            border-radius: 0 var(--border-radius-lg) 0 0;
+        }
+
+        .equipment-table th:last-child {
+            border-radius: var(--border-radius-lg) 0 0 0;
         }
 
         .equipment-table td {
-            padding: var(--spacing-4);
-            border-bottom: 1px solid var(--color-gray-200);
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #eef2f7;
+            vertical-align: middle;
+            transition: var(--transition-fast);
+        }
+
+        .equipment-table tbody tr {
+            transition: var(--transition-medium);
         }
 
         .equipment-table tbody tr:hover {
-            background-color: var(--color-gray-50);
+            background: linear-gradient(90deg, rgba(30, 60, 114, 0.03), rgba(42, 82, 152, 0.05));
         }
 
+        .equipment-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-title {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .table-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+        }
+
+        .table-location i {
+            color: var(--gold-dark);
+        }
+
+        .table-price {
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-actions .btn {
+            padding: 8px 12px;
+        }
+
+        /* ==================== الشارات ==================== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, rgba(0, 184, 148, 0.15), rgba(0, 206, 201, 0.15));
+            color: #00b894;
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(192, 57, 43, 0.15));
+            color: #e74c3c;
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.15), rgba(230, 126, 34, 0.15));
+            color: #f39c12;
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(41, 128, 185, 0.15));
+            color: #3498db;
+        }
+
+        /* ==================== بطاقات الطلبات ==================== */
         .request-card {
-            background: var(--color-white);
+            background: var(--bg-card);
             border-radius: var(--border-radius-xl);
-            padding: var(--spacing-6);
-            box-shadow: var(--shadow-md);
-            margin-bottom: var(--spacing-4);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.5rem;
+            transition: all var(--transition-medium);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .request-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: var(--transition-medium);
+        }
+
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .request-card:hover::before {
+            width: 6px;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px dashed #eef2f7;
+        }
+
+        .request-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .request-category {
+            margin: 0.25rem 0 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .request-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .request-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .request-info-item i {
+            color: var(--primary-dark);
+            width: 18px;
+            text-align: center;
+        }
+
+        .request-info-item strong {
+            color: var(--text-primary);
+        }
+
+        .request-notes {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            padding: 1rem;
+            border-radius: var(--border-radius-md);
+            margin-bottom: 1.25rem;
+            border-right: 3px solid var(--primary-dark);
+        }
+
+        .request-notes strong {
+            color: var(--primary-dark);
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== الخريطة ==================== */
+        .map-container {
+            margin-top: 2rem;
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-medium);
+            animation: fadeInUp 0.6s ease 0.4s backwards;
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .map-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .map-header i {
+            color: var(--gold-dark);
+            font-size: 1.3rem;
         }
 
         #map {
-            height: 400px;
-            border-radius: var(--border-radius-xl);
+            height: 450px;
+            border-radius: var(--border-radius-lg);
             overflow: hidden;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* ==================== حالة فارغة ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #dfe6e9;
+            margin-bottom: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+        }
+
+        /* ==================== النافذة المنبثقة ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--border-radius-xl);
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-strong);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: var(--primary-gradient);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-title {
+            color: var(--white);
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            background: var(--bg-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            border-top: 1px solid #eef2f7;
+        }
+
+        /* ==================== النماذج ==================== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1rem;
+            font-family: 'Tajawal', sans-serif;
+            border: 2px solid #e8ecf4;
+            border-radius: var(--border-radius-md);
+            background: var(--bg-light);
+            color: var(--text-primary);
+            transition: var(--transition-medium);
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-dark);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.1);
+        }
+
+        .form-control:hover {
+            border-color: var(--primary-light);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-hint {
+            font-size: 0.85rem;
+            color: #e74c3c;
+            margin-top: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        /* ==================== الذيل (Footer) ==================== */
+        .footer {
+            background: var(--primary-gradient);
+            background-size: 200% 200%;
+            animation: gradientShift 10s ease infinite;
+            padding: 2rem;
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .footer-developer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .footer-developer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-developer-badge i {
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        .footer-developer-badge span {
+            color: var(--white);
+            font-size: 0.95rem;
+        }
+
+        .footer-developer-badge strong {
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .footer-year {
+            background: var(--secondary-gradient);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(241, 39, 17, 0.3);
+        }
+
+        .footer-copyright {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+        }
+
+        /* ==================== المرافق ==================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .gap-3 {
+            gap: 0.75rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem;
+        }
+
+        /* ==================== الاستجابة ==================== */
+        @media (max-width: 992px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+
+            .navbar-brand span {
+                display: none;
+            }
+
+            .navbar-user span {
+                display: none;
+            }
+
+            .main-content {
+                padding: 100px 1rem 2rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .dashboard-tabs {
+                flex-direction: column;
+            }
+
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .equipment-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .request-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .request-actions {
+                flex-direction: column;
+            }
+
+            .request-actions .btn {
+                width: 100%;
+            }
+
+            .modal {
+                margin: 1rem;
+                max-height: calc(100vh - 2rem);
+            }
+
+            .footer-developer {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -103,7 +1095,7 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar">
-        <div class="container navbar-container">
+        <div class="navbar-container">
             <a href="/index.html" class="navbar-brand">
                 <i class="fas fa-tools"></i>
                 <span>نظام معداتي</span>
@@ -124,14 +1116,15 @@
         </div>
     </nav>
 
-    <main class="container" style="padding: var(--spacing-8) var(--spacing-6);">
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h1 style="color: var(--color-primary); margin-bottom: var(--spacing-2);">
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <h1>
                     <i class="fas fa-tachometer-alt"></i>
                     لوحة التحكم
                 </h1>
-                <p style="color: var(--color-gray-600);">إدارة معداتك وطلبات الخدمة</p>
+                <p>إدارة معداتك وطلبات الخدمة بكل سهولة</p>
             </div>
         </div>
 
@@ -144,13 +1137,13 @@
             <button class="tab-button" data-tab="requests">
                 <i class="fas fa-clipboard-list"></i>
                 طلبات الخدمة
-                <span id="requestCount" class="badge badge-warning" style="margin-right: var(--spacing-2);"></span>
+                <span id="requestCount" class="badge badge-warning"></span>
             </button>
         </div>
 
         <!-- Equipment Tab -->
         <div id="equipmentTab" class="tab-content active">
-            <div class="flex justify-between items-center mb-6">
+            <div class="section-header">
                 <h2><i class="fas fa-wrench"></i> إدارة المعدات</h2>
                 <button id="addEquipmentBtn" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
@@ -163,13 +1156,18 @@
 
         <!-- Requests Tab -->
         <div id="requestsTab" class="tab-content">
-            <h2 class="mb-6"><i class="fas fa-bell"></i> طلبات الخدمة الواردة</h2>
+            <div class="section-header mb-6">
+                <h2><i class="fas fa-bell"></i> طلبات الخدمة الواردة</h2>
+            </div>
 
             <div id="requestsContainer"></div>
 
             <!-- Map Container -->
-            <div id="mapContainer" class="hidden" style="margin-top: var(--spacing-8);">
-                <h3 class="mb-4"><i class="fas fa-map-marked-alt"></i> مواقع العملاء على الخريطة</h3>
+            <div id="mapContainer" class="map-container hidden">
+                <div class="map-header">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>مواقع العملاء على الخريطة</h3>
+                </div>
                 <div id="map"></div>
             </div>
         </div>
@@ -187,53 +1185,79 @@
                     <input type="hidden" id="equipmentId">
 
                     <div class="form-group">
-                        <label class="form-label">عنوان المعدة</label>
-                        <input type="text" id="title" class="form-control" required>
+                        <label class="form-label">
+                            <i class="fas fa-heading"></i>
+                            عنوان المعدة
+                        </label>
+                        <input type="text" id="title" class="form-control" placeholder="أدخل عنوان المعدة" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">الفئة</label>
+                        <label class="form-label">
+                            <i class="fas fa-th-large"></i>
+                            الفئة
+                        </label>
                         <select id="category" class="form-control" required></select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">الوصف</label>
-                        <textarea id="description" class="form-control" rows="4" required></textarea>
+                        <label class="form-label">
+                            <i class="fas fa-align-left"></i>
+                            الوصف
+                        </label>
+                        <textarea id="description" class="form-control" rows="4" placeholder="أدخل وصف تفصيلي للمعدة" required></textarea>
                     </div>
 
-                    <div class="grid grid-cols-2">
+                    <div class="form-grid">
                         <div class="form-group">
-                            <label class="form-label">السعر لليوم (دينار)</label>
-                            <input type="number" id="pricePerDay" class="form-control" min="0" required>
-                            <span style="color: red;">يمكنك كتابة 0 في حالة كانت المعدة تشتغل بالساعة فقط وليس باليوم</span>
+                            <label class="form-label">
+                                <i class="fas fa-money-bill-wave"></i>
+                                السعر لليوم (دينار)
+                            </label>
+                            <input type="number" id="pricePerDay" class="form-control" min="0" placeholder="0" required>
+                            <p class="form-hint">يمكنك كتابة 0 في حالة كانت المعدة تشتغل بالساعة فقط</p>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">السعر للساعة (دينار) - اختياري</label>
-                            <input type="number" id="pricePerHour" class="form-control" min="0">
+                            <label class="form-label">
+                                <i class="fas fa-clock"></i>
+                                السعر للساعة (دينار) - اختياري
+                            </label>
+                            <input type="number" id="pricePerHour" class="form-control" min="0" placeholder="0">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2">
+                    <div class="form-grid">
                         <div class="form-group">
-                            <label class="form-label">المدينة</label>
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                المدينة
+                            </label>
                             <select id="city" class="form-control" required></select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">رقم الهاتف</label>
-                            <input type="tel" id="phoneNumber" class="form-control" pattern="(091|092|093|094|095)\d{7}"
-                                required>
+                            <label class="form-label">
+                                <i class="fas fa-phone"></i>
+                                رقم الهاتف
+                            </label>
+                            <input type="tel" id="phoneNumber" class="form-control" pattern="(091|092|093|094|095)\d{7}" placeholder="09XXXXXXXX" required>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">صور المعدة (اختر حتى 5 صور)</label>
+                        <label class="form-label">
+                            <i class="fas fa-images"></i>
+                            صور المعدة (اختر حتى 5 صور)
+                        </label>
                         <input type="file" id="images" class="form-control" accept="image/*" multiple>
                     </div>
 
                     <div class="form-group" id="statusGroup" style="display: none;">
-                        <label class="form-label">الحالة</label>
+                        <label class="form-label">
+                            <i class="fas fa-toggle-on"></i>
+                            الحالة
+                        </label>
                         <select id="status" class="form-control">
                             <option value="متاحة">متاحة</option>
                             <option value="مشغولة">مشغولة</option>
@@ -246,10 +1270,30 @@
                     <i class="fas fa-save"></i>
                     حفظ
                 </button>
-                <button class="btn btn-outline" id="cancelModal">إلغاء</button>
+                <button class="btn btn-outline" id="cancelModal">
+                    <i class="fas fa-times"></i>
+                    إلغاء
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-developer">
+                <div class="footer-developer-badge">
+                    <i class="fas fa-code"></i>
+                    <span>تطوير: <strong>م. عبدالرحمن صلاح الطوير</strong></span>
+                </div>
+                <div class="footer-year">
+                    <i class="fas fa-calendar-alt"></i>
+                    2025
+                </div>
+            </div>
+            <p class="footer-copyright">جميع الحقوق محفوظة © نظام معداتي - ليبيا</p>
+        </div>
+    </footer>
 
     <script type="module">
         import { LIBYAN_CITIES, EQUIPMENT_CATEGORIES } from './js/config.js';
@@ -355,55 +1399,58 @@
 
                     if (equipment.length === 0) {
                         container.innerHTML = `
-            <div class="card text-center" style="padding: var(--spacing-12);">
-              <i class="fas fa-inbox" style="font-size: 3rem; color: var(--color-gray-300); margin-bottom: var(--spacing-4);"></i>
-              <h3 style="color: var(--color-gray-600);">لا توجد معدات</h3>
-              <p style="color: var(--color-gray-500);">ابدأ بإضافة معدة جديدة</p>
+            <div class="empty-state">
+              <i class="fas fa-inbox empty-state-icon"></i>
+              <h3>لا توجد معدات</h3>
+              <p>ابدأ بإضافة معدة جديدة</p>
             </div>
           `;
                         return;
                     }
 
                     let tableHTML = `
-          <table class="equipment-table">
-            <thead>
-              <tr>
-                <th>العنوان</th>
-                <th>الفئة</th>
-                <th>المدينة</th>
-                <th>السعر/يوم</th>
-                <th>الحالة</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
+          <div class="table-container">
+            <table class="equipment-table">
+              <thead>
+                <tr>
+                  <th>العنوان</th>
+                  <th>الفئة</th>
+                  <th>المدينة</th>
+                  <th>السعر/يوم</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
         `;
 
                     equipment.forEach(item => {
                         const statusBadge = item.status === 'متاحة'
-                            ? '<span class="badge badge-success">متاحة</span>'
-                            : '<span class="badge badge-danger">مشغولة</span>';
+                            ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> متاحة</span>'
+                            : '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> مشغولة</span>';
 
                         tableHTML += `
             <tr>
-              <td><strong>${item.title}</strong></td>
+              <td><span class="table-title">${item.title}</span></td>
               <td>${item.category}</td>
-              <td><i class="fas fa-map-marker-alt"></i> ${item.city}</td>
-              <td><strong style="color: var(--color-accent);">${formatPrice(item.pricePerDay)}</strong></td>
+              <td><span class="table-location"><i class="fas fa-map-marker-alt"></i> ${item.city}</span></td>
+              <td><span class="table-price">${formatPrice(item.pricePerDay)}</span></td>
               <td>${statusBadge}</td>
               <td>
-                <button class="btn btn-sm btn-secondary" onclick="editEquipment('${item._id}')">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteEquipment('${item._id}', '${item.title}')">
-                  <i class="fas fa-trash"></i>
-                </button>
+                <div class="table-actions">
+                  <button class="btn btn-sm btn-secondary" style="background: var(--info-gradient); color: white; border: none;" onclick="editEquipment('${item._id}')">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteEquipment('${item._id}', '${item.title}')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           `;
                     });
 
-                    tableHTML += '</tbody></table>';
+                    tableHTML += '</tbody></table></div>';
                     container.innerHTML = tableHTML;
 
                 } catch (error) {
@@ -497,9 +1544,10 @@
 
                     if (allRequests.length === 0) {
                         container.innerHTML = `
-            <div class="card text-center" style="padding: var(--spacing-12);">
-              <i class="fas fa-clipboard" style="font-size: 3rem; color: var(--color-gray-300); margin-bottom: var(--spacing-4);"></i>
-              <h3 style="color: var(--color-gray-600);">لا توجد طلبات</h3>
+            <div class="empty-state">
+              <i class="fas fa-clipboard empty-state-icon"></i>
+              <h3>لا توجد طلبات</h3>
+              <p>ستظهر الطلبات هنا عند ورودها</p>
             </div>
           `;
                         document.getElementById('mapContainer').classList.add('hidden');
@@ -507,7 +1555,7 @@
                     }
 
                     let requestsHTML = '';
-                    allRequests.forEach(request => {
+                    allRequests.forEach((request, index) => {
                         const statusClass = {
                             'قيد الانتظار': 'badge-warning',
                             'مقبول': 'badge-info',
@@ -515,33 +1563,58 @@
                             'ملغي': 'badge-danger'
                         }[request.status];
 
+                        const statusIcon = {
+                            'قيد الانتظار': 'fa-hourglass-half',
+                            'مقبول': 'fa-check',
+                            'مكتمل': 'fa-check-double',
+                            'ملغي': 'fa-times'
+                        }[request.status];
+
                         requestsHTML += `
-            <div class="request-card">
-              <div class="flex justify-between items-center mb-4">
+            <div class="request-card" style="animation-delay: ${index * 0.1}s;">
+              <div class="request-header">
                 <div>
-                  <h3 style="margin: 0; color: var(--color-primary);">${request.equipment.title}</h3>
-                  <p style="margin: 0; color: var(--color-gray-600);">${request.equipment.category}</p>
+                  <h3 class="request-title">${request.equipment.title}</h3>
+                  <p class="request-category">${request.equipment.category}</p>
                 </div>
-                <span class="badge ${statusClass}">${request.status}</span>
+                <span class="badge ${statusClass}">
+                  <i class="fas ${statusIcon}"></i>
+                  ${request.status}
+                </span>
               </div>
 
-              <div class="grid grid-cols-2" style="margin-bottom: var(--spacing-4);">
-                <div>
-                  <p><i class="fas fa-user"></i> <strong>العميل:</strong> ${request.customer.name}</p>
-                  <p><i class="fas fa-phone"></i> <strong>الهاتف:</strong> ${request.customerPhone}</p>
-                  <p><i class="fas fa-map-marker-alt"></i> <strong>المدينة:</strong> ${request.customer.city}</p>
+              <div class="request-grid">
+                <div class="request-info-item">
+                  <i class="fas fa-user"></i>
+                  <strong>العميل:</strong> ${request.customer.name}
                 </div>
-                <div>
-                  <p><i class="fas fa-calendar"></i> <strong>التاريخ:</strong> ${formatDate(request.createdAt)}</p>
-                  <p><i class="fas fa-location-arrow"></i> <strong>الموقع:</strong> ${request.location.lat.toFixed(4)}, ${request.location.lng.toFixed(4)}</p>
+                <div class="request-info-item">
+                  <i class="fas fa-phone"></i>
+                  <strong>الهاتف:</strong> ${request.customerPhone}
+                </div>
+                <div class="request-info-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <strong>المدينة:</strong> ${request.customer.city}
+                </div>
+                <div class="request-info-item">
+                  <i class="fas fa-calendar"></i>
+                  <strong>التاريخ:</strong> ${formatDate(request.createdAt)}
+                </div>
+                <div class="request-info-item">
+                  <i class="fas fa-location-arrow"></i>
+                  <strong>الموقع:</strong> ${request.location.lat.toFixed(4)}, ${request.location.lng.toFixed(4)}
                 </div>
               </div>
 
-              ${request.notes ? `<p style="background: var(--color-gray-50); padding: var(--spacing-3); border-radius: var(--border-radius-md); margin-bottom: var(--spacing-4);"><strong>ملاحظات:</strong> ${request.notes}</p>` : ''}
+              ${request.notes ? `
+                <div class="request-notes">
+                  <strong><i class="fas fa-sticky-note"></i> ملاحظات:</strong> ${request.notes}
+                </div>
+              ` : ''}
 
-              <div class="flex gap-3">
+              <div class="request-actions">
                 ${request.status === 'قيد الانتظار' ? `
-                  <button class="btn btn-primary btn-sm" onclick="updateRequestStatus('${request._id}', 'مقبول')">
+                  <button class="btn btn-success btn-sm" onclick="updateRequestStatus('${request._id}', 'مقبول')">
                     <i class="fas fa-check"></i> قبول الطلب
                   </button>
                   <button class="btn btn-danger btn-sm" onclick="updateRequestStatus('${request._id}', 'ملغي')">
@@ -553,7 +1626,7 @@
                     <i class="fas fa-check-circle"></i> إكمال
                   </button>
                 ` : ''}
-                <a href="tel:${request.customerPhone}" class="btn btn-secondary btn-sm">
+                <a href="tel:${request.customerPhone}" class="btn btn-sm" style="background: var(--info-gradient); color: white;">
                   <i class="fas fa-phone"></i> اتصل بالعميل
                 </a>
               </div>
