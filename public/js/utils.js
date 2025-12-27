@@ -192,7 +192,7 @@ export const requireGuest = () => {
         if (user && user.role === 'owner') {
             window.location.href = '/owner-dashboard.html';
         } else {
-            window.location.href = '/index.html';
+            window.location.href = '/home.html';
         }
         return false;
     }
